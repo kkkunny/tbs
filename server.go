@@ -153,7 +153,7 @@ func (this *TBServer) runNewUpdate() {
 					go handle(*m)
 				}
 			}
-		} else {
+		} else if err != nil {
 			_ = Logger.WriteError(err)
 		}
 		time.Sleep(1 * time.Second)
