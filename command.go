@@ -57,5 +57,5 @@ func (this *TBServer)builtInCommand(){
 		}
 		_ = sess.SendMessage(sess.Update.Message.From.Id, msg)
 	}
-	this.AddCommand("model", "查看模块", model)
+	this.AddCommand("Model", "查看模块", model)
 }

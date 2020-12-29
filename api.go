@@ -2,8 +2,8 @@ package tbs
 
 import (
 	"encoding/json"
-	"my/crypto"
-	"my/http/requests"
+	"github.com/kkkunny/GoMy/crypto"
+	"github.com/kkkunny/GoMy/http/requests"
 )
 
 // 与服务器之间的交流

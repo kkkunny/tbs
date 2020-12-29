@@ -2,7 +2,7 @@ package tbs
 
 import (
 	"errors"
-	"my/http/requests"
+	"github.com/kkkunny/GoMy/http/requests"
 	"sync"
 	"time"
 )
@@ -13,7 +13,7 @@ func NewTBServer(bootApi string, proxy string)*TBServer{
 		mutex: sync.RWMutex{},
 		api:    &api{botApi: bootApi, request: *requests.NewRequestWithProxy(proxy)},
 		proxy:  proxy,
-		models: make(map[string]*model),
+		models: make(map[string]*Model),
 		closeModels: make(map[string]string),
 		commands: make(map[string]*command),
 	}
@@ -25,51 +25,54 @@ type TBServer struct {
 	mutex sync.RWMutex            // 读写锁
 	api    *api                   // 机器人api
 	proxy  string                 // 代理
-	models map[string]*model      // 模块map
+	models map[string]*Model      // 模块map
 	closeModels map[string]string // 关闭的模块
 	commands map[string]*command  // 命令
 }
 // 添加模块
-func (this *TBServer)AddModel(name string, introd string, updateHandler Handler)*model{
-	if _, ok := this.models[name]; !ok{
-		mod := &model{
-			name: name,
-			introd: introd,
-			update: updateHandler,
-			commands: make(map[string]*command),
-		}
-		this.models[name] = mod
-		return mod
+func (this *TBServer)AddModel(model *Model){
+	if _, ok := this.models[model.name]; !ok{
+		this.models[model.name] = model
+		return
 	}
-	panic(errors.New("model is existed : " + name))
+	panic(errors.New("Model is existed : " + model.name))
+}
+// 新增模块
+func (this *TBServer)NewModel(name string, introd string, updateHandler Handler)*Model {
+	if _, ok := this.models[name]; !ok{
+		model := NewModel(name, introd, updateHandler)
+		this.models[name] = model
+		return model
+	}
+	panic(errors.New("Model is existed : " + name))
 }
 // 关闭模块
 func (this *TBServer)CloseModel(name string)error{
 	if _, ok := this.closeModels[name]; ok{
-		return errors.New("this model is closing : " + name)
+		return errors.New("this Model is closing : " + name)
 	}
 	if _, ok := this.models[name]; ok{
 		this.closeModels[name] = ""
 		return nil
 	}
-	return errors.New("don't exist this model : " + name)
+	return errors.New("don't exist this Model : " + name)
 }
 // 打开模块
 func (this *TBServer)OpenModel(name string)error{
 	if _, ok := this.models[name]; !ok{
-		return errors.New("don't exist this model : " + name)
+		return errors.New("don't exist this Model : " + name)
 	}
 	if _, ok := this.closeModels[name]; ok{
 		delete(this.closeModels, name)
 		return nil
 	}
-	return errors.New("this model is running : " + name)
+	return errors.New("this Model is running : " + name)
 }
 // 获取运行中的模块
-func (this *TBServer)getRunningModels()map[string]*model {
+func (this *TBServer)getRunningModels()map[string]*Model {
 	this.mutex.RLock()
 	defer this.mutex.RUnlock()
-	var result = make(map[string]*model)
+	var result = make(map[string]*Model)
 	for name, model := range this.models{
 		if _, ok := this.closeModels[name]; !ok{
 			result[name] = model
@@ -125,7 +128,7 @@ func (this *TBServer)runNewUpdate(){
 				}
 			}else{  // 转发给各个模块
 				for _, m := range this.getRunningModels(){
-					handle := func(m2 model) {
+					handle := func(m2 Model) {
 						session := &Session{api: *this.api, Update: *ud}
 						m2.run(session)
 					}
