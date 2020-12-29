@@ -2,8 +2,15 @@ package tbs
 
 import "strings"
 
+// 回复JSON
+type JsonResponse struct {
+	Ok bool `json:"ok"`
+	ErrorCode int `json:"error_code"`
+	Description string `json:"description"`
+}
+
 // 请求JSON
-type Request struct {
+type JsonRequest struct {
 	Ok bool `json:"ok"`
 	Result []JsonUpdate `json:"result"`
 }

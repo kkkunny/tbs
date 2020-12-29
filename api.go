@@ -2,6 +2,7 @@ package tbs
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/kkkunny/GoMy/crypto"
 	"github.com/kkkunny/GoMy/http/requests"
 )
@@ -12,14 +13,25 @@ type api struct {
 	request requests.Request
 	lastUpdateHash string  // 上一次更新的哈希
 }
+// 处理回复
+func (this *api)handleResponse(response *requests.Response)error{
+	var result JsonResponse
+	if err := response.Json(&result); err != nil{
+		return err
+	}
+	if !result.Ok{
+		return errors.New(result.Description)
+	}
+	return nil
+}
 // 获取请求
-func (this *api)getUpdates()(*Request, error){
+func (this *api)getUpdates()(*JsonRequest, error){
 	var url = this.botApi + "/getUpdates"
 	response, err := this.request.Get(url, nil)
 	if err != nil{
 		return nil, err
 	}
-	var result Request
+	var result JsonRequest
 	err = response.Json(&result)
 	if err != nil{
 		return &result, err
@@ -47,15 +59,18 @@ func (this *api)getUpdate()(*JsonUpdate, error){
 	}
 	return nil, err
 }
-// 发送信息
+// 发送信息(上限4096个字符)
 func (this *api)SendMessage(id int, msg string)error{
 	var url = this.botApi + "/sendMessage"
 	data := map[string]interface{}{
 		"chat_id": id,
 		"text": msg,
 	}
-	_, err := this.request.Post(url, data, false)
+	response, err := this.request.Post(url, data, false)
 	if err != nil{
+		return err
+	}
+	if err := this.handleResponse(response); err != nil{
 		return err
 	}
 	return nil
@@ -68,8 +83,11 @@ func (this *api)SendPhoto(id int, photoUrl string, title string)error{
 		"photo": photoUrl,
 		"caption": title,
 	}
-	_, err := this.request.Post(url, data, false)
+	response, err := this.request.Post(url, data, false)
 	if err != nil{
+		return err
+	}
+	if err := this.handleResponse(response); err != nil{
 		return err
 	}
 	return nil
@@ -82,8 +100,11 @@ func (this *api)SendVideo(id int, videoUrl string, title string)error{
 		"video": videoUrl,
 		"caption": title,
 	}
-	_, err := this.request.Post(url, data, false)
+	response, err := this.request.Post(url, data, false)
 	if err != nil{
+		return err
+	}
+	if err := this.handleResponse(response); err != nil{
 		return err
 	}
 	return nil
@@ -103,8 +124,11 @@ func (this *api)SendMediaGroup(id int, mediaType string, medias []string)error{
 		"chat_id": id,
 		"media": inputMedias,
 	}
-	_, err := this.request.Post(url, data, true)
+	response, err := this.request.Post(url, data, true)
 	if err != nil{
+		return err
+	}
+	if err := this.handleResponse(response); err != nil{
 		return err
 	}
 	return nil
