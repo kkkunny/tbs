@@ -136,9 +136,7 @@ func (this *TBServer) runNewUpdate() {
 			// 命令处理
 			if ok, commands, ps := ud.GetCommandInfos(); ok {
 				if com := this.getCommand(commands...); com != nil && com.loadParams(ps...) == nil {
-					if err = Logger.WriteInfoLog(fmt.Sprintf("来自%s的命令：%s\t参数：%s", ud.Message.From.Username, "/"+strings.Join(commands, "/"), strings.Join(ps, ","))); err != nil {
-						_ = Logger.WriteError(err)
-					}
+					_ = Logger.WriteInfoLog(fmt.Sprintf("来自%s的命令：%s\t参数：%s", ud.Message.From.Username, "/"+strings.Join(commands, "/"), strings.Join(ps, ",")))
 					handle := func() {
 						session := &Session{Api: *this.api, Update: *ud, Params: com.params}
 						(*com).run(session)
@@ -146,9 +144,7 @@ func (this *TBServer) runNewUpdate() {
 					go handle()
 				}
 			} else { // 转发给各个模块
-				if err = Logger.WriteInfoLog(fmt.Sprintf("来自%s的消息：%s", ud.Message.From.Username, ud.Message.Text)); err != nil {
-					_ = Logger.WriteError(err)
-				}
+				_ = Logger.WriteInfoLog(fmt.Sprintf("来自%s的消息：%s", ud.Message.From.Username, ud.Message.Text))
 				for _, m := range this.getRunningModels() {
 					handle := func(m2 Model) {
 						session := &Session{Api: *this.api, Update: *ud}
