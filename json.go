@@ -16,7 +16,7 @@ type JsonRequest struct {
 }
 // 消息更新
 type JsonUpdate struct {
-	UpdateId int `json:"update_id"`
+	UpdateId int64 `json:"update_id"`
 	Message JsonMessage `json:"message"`
 }
 // 获取命令信息

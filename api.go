@@ -1,9 +1,7 @@
 package tbs
 
 import (
-	"encoding/json"
 	"errors"
-	"github.com/kkkunny/GoMy/crypto"
 	"github.com/kkkunny/GoMy/http/requests"
 )
 
@@ -11,7 +9,7 @@ import (
 type Api struct {
 	botApi string
 	request requests.Request
-	lastUpdateHash string  // 上一次更新的哈希
+	lastUpdateId int64  // 上一次更新的id
 }
 // 处理回复
 func (this *Api)handleResponse(response *requests.Response)error{
@@ -25,9 +23,15 @@ func (this *Api)handleResponse(response *requests.Response)error{
 	return nil
 }
 // 获取请求
-func (this *Api)getUpdates()(*JsonRequest, error){
+func (this *Api)getUpdates(offset int, limit int, timeout int, allowedUpdates []string)(*JsonRequest, error){
 	var url = this.botApi + "/getUpdates"
-	response, err := this.request.Get(url, nil)
+	data := map[string]interface{}{
+		"offset": offset,
+		"limit": limit,
+		"timeout": timeout,
+		"allowed_updates": allowedUpdates,
+	}
+	response, err := this.request.Post(url, data, true)
 	if err != nil{
 		return nil, err
 	}
@@ -40,18 +44,13 @@ func (this *Api)getUpdates()(*JsonRequest, error){
 }
 // 获取新消息更新
 func (this *Api)getUpdate()(*JsonUpdate, error){
-	request, err := this.getUpdates()
+	request, err := this.getUpdates(-1, 1, 0, []string{})
 	if err == nil && len(request.Result) > 0{
 		result := request.Result[len(request.Result)-1]
-		data, err := json.Marshal(&result)
-		if err != nil{
-			return &result, err
-		}
-		hash := string(crypto.EncodeSha1(data))
-		if this.lastUpdateHash == ""{
-			this.lastUpdateHash = hash
-		}else if this.lastUpdateHash != hash{
-			this.lastUpdateHash = hash
+		if this.lastUpdateId == 0{
+			this.lastUpdateId = result.UpdateId
+		}else if this.lastUpdateId != result.UpdateId{
+			this.lastUpdateId = result.UpdateId
 			return &result, nil
 		}else{
 			return nil, nil
