@@ -8,13 +8,13 @@ import (
 )
 
 // 与服务器之间的交流
-type api struct {
+type Api struct {
 	botApi string
 	request requests.Request
 	lastUpdateHash string  // 上一次更新的哈希
 }
 // 处理回复
-func (this *api)handleResponse(response *requests.Response)error{
+func (this *Api)handleResponse(response *requests.Response)error{
 	var result JsonResponse
 	if err := response.Json(&result); err != nil{
 		return err
@@ -25,7 +25,7 @@ func (this *api)handleResponse(response *requests.Response)error{
 	return nil
 }
 // 获取请求
-func (this *api)getUpdates()(*JsonRequest, error){
+func (this *Api)getUpdates()(*JsonRequest, error){
 	var url = this.botApi + "/getUpdates"
 	response, err := this.request.Get(url, nil)
 	if err != nil{
@@ -39,7 +39,7 @@ func (this *api)getUpdates()(*JsonRequest, error){
 	return &result, nil
 }
 // 获取新消息更新
-func (this *api)getUpdate()(*JsonUpdate, error){
+func (this *Api)getUpdate()(*JsonUpdate, error){
 	request, err := this.getUpdates()
 	if err == nil && len(request.Result) > 0{
 		result := request.Result[len(request.Result)-1]
@@ -60,7 +60,7 @@ func (this *api)getUpdate()(*JsonUpdate, error){
 	return nil, err
 }
 // 发送信息(上限4096个字符)
-func (this *api)SendMessage(id int, msg string)error{
+func (this *Api)SendMessage(id int, msg string)error{
 	var url = this.botApi + "/sendMessage"
 	data := map[string]interface{}{
 		"chat_id": id,
@@ -76,7 +76,7 @@ func (this *api)SendMessage(id int, msg string)error{
 	return nil
 }
 // 发送图片
-func (this *api)SendPhoto(id int, photoUrl string, title string)error{
+func (this *Api)SendPhoto(id int, photoUrl string, title string)error{
 	var url = this.botApi + "/sendPhoto"
 	data := map[string]interface{}{
 		"chat_id": id,
@@ -93,7 +93,7 @@ func (this *api)SendPhoto(id int, photoUrl string, title string)error{
 	return nil
 }
 // 发送视频（只支持mp4）
-func (this *api)SendVideo(id int, videoUrl string, title string)error{
+func (this *Api)SendVideo(id int, videoUrl string, title string)error{
 	var url = this.botApi + "/sendPhoto"
 	data := map[string]interface{}{
 		"chat_id": id,
@@ -110,7 +110,7 @@ func (this *api)SendVideo(id int, videoUrl string, title string)error{
 	return nil
 }
 // 发送一组媒体[2, 9](photo, video)
-func (this *api)SendMediaGroup(id int, mediaType string, medias []string)error{
+func (this *Api)SendMediaGroup(id int, mediaType string, medias []string)error{
 	var url = this.botApi + "/sendMediaGroup"
 	var inputMedias []InputMedia
 	for k, mediaUrl := range medias{

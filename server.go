@@ -18,7 +18,7 @@ var Logger *log.Logger
 func NewTBServer(bootApi string, proxy string) *TBServer {
 	server := &TBServer{
 		mutex:       sync.RWMutex{},
-		api:         &api{botApi: bootApi, request: *requests.NewRequestWithProxy(proxy)},
+		api:         &Api{botApi: bootApi, request: *requests.NewRequestWithProxy(proxy)},
 		proxy:       proxy,
 		models:      make(map[string]*Model),
 		closeModels: make(map[string]string),
@@ -31,7 +31,7 @@ func NewTBServer(bootApi string, proxy string) *TBServer {
 // 电报机器人服务器
 type TBServer struct {
 	mutex       sync.RWMutex        // 读写锁
-	api         *api                // 机器人api
+	api         *Api                // 机器人api
 	proxy       string              // 代理
 	models      map[string]*Model   // 模块map
 	closeModels map[string]string   // 关闭的模块
@@ -138,7 +138,7 @@ func (this *TBServer) runNewUpdate() {
 				if com := this.getCommand(commands...); com != nil && com.loadParams(ps...) == nil {
 					_ = Logger.WriteInfoLog(fmt.Sprintf("来自%s的命令：%s\t参数：%s", ud.Message.From.Username, "/"+strings.Join(commands, "/"), strings.Join(ps, ",")))
 					handle := func() {
-						session := &Session{api: *this.api, Update: *ud, Params: com.params}
+						session := &Session{Api: *this.api, Update: *ud, Params: com.params}
 						(*com).run(session)
 					}
 					go handle()
@@ -147,7 +147,7 @@ func (this *TBServer) runNewUpdate() {
 				_ = Logger.WriteInfoLog(fmt.Sprintf("来自%s的消息：%s", ud.Message.From.Username, ud.Message.Text))
 				for _, m := range this.getRunningModels() {
 					handle := func(m2 Model) {
-						session := &Session{api: *this.api, Update: *ud}
+						session := &Session{Api: *this.api, Update: *ud}
 						m2.run(session)
 					}
 					go handle(*m)

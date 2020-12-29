@@ -32,12 +32,12 @@ func (this params)GetParamInt(key string)int{
 
 // 会话
 type Session struct {
-	api
+	Api
 	Update JsonUpdate // 消息更新
 	Params params      // 参数
 }
 
 // 任务会话
 type TaskSession struct {
-	api
+	Api
 }
