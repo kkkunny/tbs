@@ -182,7 +182,7 @@ func (this *TBServer) runTask() {
 
 // 运行
 func (this *TBServer) Run() {
-	_ = Logger.WriteLog("TelegramBotServer is running......")
+	_ = Logger.WriteLog("TelegramBotServer is running......\n")
 	wait := sync.WaitGroup{}
 	wait.Add(2)
 	// 新消息接收
